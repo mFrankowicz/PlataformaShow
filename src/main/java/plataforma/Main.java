@@ -14,7 +14,7 @@ public class Main extends Application {
         Parent root = loader.load();
 
         primaryStage.setTitle("Plataforma de Tradução Show!");
-        primaryStage.setScene(new Scene(root, 1200, 650));
+        primaryStage.setScene(new Scene(root, 1350, 650));
         primaryStage.show();
     }
 

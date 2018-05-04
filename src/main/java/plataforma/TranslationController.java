@@ -6,9 +6,16 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableListValue;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Bounds;
+import javafx.scene.Node;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.Pane;
 import org.bson.Document;
@@ -22,20 +29,31 @@ import org.bson.Document;
 public class TranslationController {
 
     private final DatabaseManager databaseManager;
+
+    private ScrollPane scrollPane;
+    private AnchorPane anchorPane;
     private FlowPane flowPane;
+
     private ObservableList<TranslationCards> translationCards = FXCollections.observableArrayList();
 
-    public TranslationController() {
+    private NoteController noteController;
+
+    public TranslationController(NoteController _noteController) {
         databaseManager = new DatabaseManager();
         flowPane = new FlowPane();
+        anchorPane = new AnchorPane();
+        scrollPane = new ScrollPane();
+        anchorPane.setMinWidth(800);
+        noteController = _noteController;
+
     }
 
 
-    public void run(ObservableList<Controller.ModelTable> list) {
-        startTask(list);
+    public void run() {
+        startTask();
     }
 
-    private void startTask(ObservableList<Controller.ModelTable> list) {
+    private void startTask() {
         Runnable task = () -> runTask();
 
         Thread backgroundThread = new Thread(task);
@@ -64,16 +82,16 @@ public class TranslationController {
 
                 System.out.println(c_1 + " - " + c_2 + " - " + c_3 + " - " + c_4);
 
-                TranslationCards t_c_1 = new TranslationCards(1, lineNumber);
+                TranslationCards t_c_1 = new TranslationCards(1, lineNumber, noteController);
                 t_c_1.getTextArea().setText(c_1);
 
-                TranslationCards t_c_2 = new TranslationCards(2, lineNumber);
+                TranslationCards t_c_2 = new TranslationCards(2, lineNumber, noteController);
                 t_c_2.getTextArea().setText(c_2);
 
-                TranslationCards t_c_3 = new TranslationCards(3, lineNumber);
+                TranslationCards t_c_3 = new TranslationCards(3, lineNumber, noteController);
                 t_c_3.getTextArea().setText(c_3);
 
-                TranslationCards t_c_4 = new TranslationCards(4, lineNumber);
+                TranslationCards t_c_4 = new TranslationCards(4, lineNumber, noteController);
                 t_c_4.getTextArea().setText(c_4);
 
 
@@ -82,12 +100,69 @@ public class TranslationController {
                 translationCards.add(t_c_3);
                 translationCards.add(t_c_4);
 
+                lineNumber++;
+
             }
         }
+
         Platform.runLater(new Runnable() {
             @Override
             public void run() {
                 translationCards.forEach((p) -> flowPane.getChildren().addAll(p.getPane()));
+                anchorPane.getChildren().add(flowPane);
+                AnchorPane.setLeftAnchor(flowPane, 0.0);
+                AnchorPane.setRightAnchor(flowPane, 0.0);
+                AnchorPane.setTopAnchor(flowPane, 0.0);
+                scrollPane.setContent(anchorPane);
+
+
+                //todo: refactor to method
+                translationCards.forEach((p) -> {
+                    p.getTextArea().focusedProperty().addListener(new ChangeListener<Boolean>() {
+                        @Override
+                        public void changed(ObservableValue<? extends Boolean> observable,
+                                            Boolean oldValue,
+                                            Boolean newValue) {
+                            noteController.getNoteCards().forEach((q) -> {
+                                if(newValue) {
+                                    if ((q.rowReference == p.rowNumber && q.columnReference == p.columnNumber)) {
+                                        if(q.getvBoxPaneAnchorPane().isVisible()){
+                                            ScrollPane noteScroll = noteController.getScrollPane();
+                                            Node noteNode = q.getvBoxPaneAnchorPane();
+                                            Bounds viewport = noteScroll.getViewportBounds();
+                                            double contentHeight = noteScroll
+                                                    .getContent()
+                                                    .localToScene(noteScroll
+                                                            .getContent()
+                                                            .getBoundsInLocal())
+                                                    .getHeight();
+
+                                            double nodeMinY = noteNode
+                                                    .localToScene(noteNode.getBoundsInLocal())
+                                                    .getMinY();
+                                            double nodeMaxY = noteNode
+                                                    .localToScene(noteNode.getBoundsInLocal())
+                                                    .getMaxY();
+
+                                            double vValueDelta = 0;
+                                            double vValueCurrent = noteScroll.getVvalue();
+
+                                            if(nodeMaxY < 0) {
+                                                vValueDelta = (nodeMinY - viewport.getHeight()) / contentHeight;
+                                            } else if (nodeMinY > viewport.getHeight()){
+                                                vValueDelta = (nodeMinY + viewport.getHeight()) / contentHeight;
+                                            }
+
+                                            noteScroll.setVvalue(vValueCurrent +  vValueDelta);
+                                        }
+                                    }
+                                } else {
+
+                                }
+                            });
+                        }
+                    });
+                });
             }
         });
 
@@ -103,6 +178,21 @@ public class TranslationController {
 
     }
 
+    public FlowPane getFlowPane() {
+        return flowPane;
+    }
+
+    public void setFlowPane(FlowPane flowPane) {
+        this.flowPane = flowPane;
+    }
+
+    public ScrollPane getScrollPane() {
+        return scrollPane;
+    }
+
+    public void setScrollPane(ScrollPane scrollPane) {
+        this.scrollPane = scrollPane;
+    }
 
 
 
