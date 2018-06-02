@@ -1,0 +1,21 @@
+.normal-text {
+    -fx-font-style: normal;
+    -fx-font-weight: normal;
+}
+
+.italic-text {
+    -fx-font-style: italic;
+}
+
+.bold-text {
+    -fx-font-weight: bold;
+}
+
+.italic-bold-text {
+    -fx-font-style: italic;
+    -fx-font-weight: bold;
+}
+
+.red-text {
+    -fx-font-color: #dc143c;
+}

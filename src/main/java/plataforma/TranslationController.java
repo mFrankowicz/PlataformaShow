@@ -6,26 +6,16 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableListValue;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.geometry.Bounds;
-import javafx.scene.Node;
-import javafx.scene.control.ContextMenu;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.Pane;
 import org.bson.Document;
-
 
 // a class that going to manage and controll the translation area of users
 // todo: here we want to able do sync data with the database via DatabaseManager
-// todo: after sync, we populate the TranslationController with the associeted data
 // todo: after populate, needs to sync the credentials in UserManager so the user can edit only his tab
-// todo: option -> implement a state manager
 public class TranslationController {
 
     private final DatabaseManager databaseManager;
@@ -38,36 +28,42 @@ public class TranslationController {
 
     private NoteController noteController;
 
-    public TranslationController(NoteController _noteController) {
+    Thread backgroundThread;
+
+    private String collectionName;
+
+    public TranslationController(NoteController _noteController, String _collectionName) {
         databaseManager = new DatabaseManager();
         flowPane = new FlowPane();
         anchorPane = new AnchorPane();
         scrollPane = new ScrollPane();
-        anchorPane.setMinWidth(800);
+        anchorPane.setMinWidth(940);
         noteController = _noteController;
-
+        collectionName = _collectionName;
     }
 
 
-    public void run() {
+    public void initTranslationCards() {
         startTask();
     }
 
     private void startTask() {
         Runnable task = () -> runTask();
 
-        Thread backgroundThread = new Thread(task);
-        backgroundThread.setDaemon(true);
+        backgroundThread = new Thread(task);
+        //backgroundThread.setDaemon(true);
         backgroundThread.start();
+        backgroundThread.setPriority(4);
 
     }
 
+    // todo: refactor to use DatabaseManager
     private void runTask() {
         MongoClientURI adminURI = new MongoClientURI("mongodb://marcosfrankowicz:Fiheci-123@maincluster-shard-00-00-nqvuh.mongodb.net:27017,maincluster-shard-00-01-nqvuh.mongodb.net:27017,maincluster-shard-00-02-nqvuh.mongodb.net:27017/test?ssl=true&replicaSet=MainCluster-shard-0&authSource=admin");
         MongoClient mongoClient = new MongoClient(adminURI);
 
         MongoDatabase database = mongoClient.getDatabase("diagrama");
-        MongoCollection<Document> collection = database.getCollection("root_table");
+        MongoCollection<Document> collection = database.getCollection(collectionName);
 
         int lineNumber = 0;
         try (MongoCursor<Document> cursor = collection.find().iterator()) {
@@ -80,20 +76,28 @@ public class TranslationController {
                 String c_3 = doc.get("column_three", String.class);
                 String c_4 = doc.get("column_four", String.class);
 
-                System.out.println(c_1 + " - " + c_2 + " - " + c_3 + " - " + c_4);
+                Document c_1_styles = (Document) doc.get("column_one_format");
+                Document c_2_styles = (Document) doc.get("column_two_format");
+                Document c_3_styles = (Document) doc.get("column_three_format");
+                Document c_4_styles = (Document) doc.get("column_four_format");
 
-                TranslationCards t_c_1 = new TranslationCards(1, lineNumber, noteController);
-                t_c_1.getTextArea().setText(c_1);
+                //System.out.println(c_1 + " - " + c_2 + " - " + c_3 + " - " + c_4);
 
-                TranslationCards t_c_2 = new TranslationCards(2, lineNumber, noteController);
-                t_c_2.getTextArea().setText(c_2);
+                TranslationCards t_c_1 = new TranslationCards(1, lineNumber, noteController, collection);
+                t_c_1.getTextArea().appendText(c_1);
+                t_c_1.applyFormatation(c_1_styles);
 
-                TranslationCards t_c_3 = new TranslationCards(3, lineNumber, noteController);
-                t_c_3.getTextArea().setText(c_3);
+                TranslationCards t_c_2 = new TranslationCards(2, lineNumber, noteController, collection);
+                t_c_2.getTextArea().appendText(c_2);
+                t_c_2.applyFormatation(c_2_styles);
 
-                TranslationCards t_c_4 = new TranslationCards(4, lineNumber, noteController);
-                t_c_4.getTextArea().setText(c_4);
+                TranslationCards t_c_3 = new TranslationCards(3, lineNumber, noteController, collection);
+                t_c_3.getTextArea().appendText(c_3);
+                t_c_3.applyFormatation(c_3_styles);
 
+                TranslationCards t_c_4 = new TranslationCards(4, lineNumber, noteController, collection);
+                t_c_4.getTextArea().appendText(c_4);
+                t_c_4.applyFormatation(c_4_styles);
 
                 translationCards.add(t_c_1);
                 translationCards.add(t_c_2);
@@ -109,60 +113,26 @@ public class TranslationController {
             @Override
             public void run() {
                 translationCards.forEach((p) -> flowPane.getChildren().addAll(p.getPane()));
+
+                flowPane.setVgap(15);
+                flowPane.setHgap(5);
+
                 anchorPane.getChildren().add(flowPane);
                 AnchorPane.setLeftAnchor(flowPane, 0.0);
                 AnchorPane.setRightAnchor(flowPane, 0.0);
-                AnchorPane.setTopAnchor(flowPane, 0.0);
+                AnchorPane.setTopAnchor(flowPane, 5.0);
                 scrollPane.setContent(anchorPane);
 
-
-                //todo: refactor to method
-                translationCards.forEach((p) -> {
-                    p.getTextArea().focusedProperty().addListener(new ChangeListener<Boolean>() {
-                        @Override
-                        public void changed(ObservableValue<? extends Boolean> observable,
-                                            Boolean oldValue,
-                                            Boolean newValue) {
-                            noteController.getNoteCards().forEach((q) -> {
-                                if(newValue) {
-                                    if ((q.rowReference == p.rowNumber && q.columnReference == p.columnNumber)) {
-                                        if(q.getvBoxPaneAnchorPane().isVisible()){
-                                            ScrollPane noteScroll = noteController.getScrollPane();
-                                            Node noteNode = q.getvBoxPaneAnchorPane();
-                                            Bounds viewport = noteScroll.getViewportBounds();
-                                            double contentHeight = noteScroll
-                                                    .getContent()
-                                                    .localToScene(noteScroll
-                                                            .getContent()
-                                                            .getBoundsInLocal())
-                                                    .getHeight();
-
-                                            double nodeMinY = noteNode
-                                                    .localToScene(noteNode.getBoundsInLocal())
-                                                    .getMinY();
-                                            double nodeMaxY = noteNode
-                                                    .localToScene(noteNode.getBoundsInLocal())
-                                                    .getMaxY();
-
-                                            double vValueDelta = 0;
-                                            double vValueCurrent = noteScroll.getVvalue();
-
-                                            if(nodeMaxY < 0) {
-                                                vValueDelta = (nodeMinY - viewport.getHeight()) / contentHeight;
-                                            } else if (nodeMinY > viewport.getHeight()){
-                                                vValueDelta = (nodeMinY + viewport.getHeight()) / contentHeight;
-                                            }
-
-                                            noteScroll.setVvalue(vValueCurrent +  vValueDelta);
-                                        }
-                                    }
-                                } else {
-
-                                }
-                            });
+                // after the thread note controller is loaded, setup de toggle
+                getTranslationCards().forEach((translationCards) -> {
+                    noteController.getNoteCards().forEach(noteCards -> {
+                        if(noteCards.rowReference == translationCards.rowNumber
+                                && noteCards.columnReference == translationCards.columnNumber){
+                            translationCards.setNoteToggler();
                         }
                     });
                 });
+
             }
         });
 
@@ -194,6 +164,12 @@ public class TranslationController {
         this.scrollPane = scrollPane;
     }
 
+    public ObservableList<TranslationCards> getTranslationCards() {
+        return translationCards;
+    }
 
+    public void setTranslationCards(ObservableList<TranslationCards> translationCards) {
+        this.translationCards = translationCards;
+    }
 
 }

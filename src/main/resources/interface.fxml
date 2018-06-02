@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
@@ -12,11 +10,11 @@
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="650.0" prefWidth="1200.0" xmlns:TableOne="http://javafx.com/javafx/8.0.121" xmlns="http://javafx.com/javafx/9" xmlns:fx="http://javafx.com/fxml/1" fx:controller="plataforma.Controller">
+<GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="650.0" prefWidth="1323.0" xmlns:TableOne="http://javafx.com/javafx/8.0.121" xmlns="http://javafx.com/javafx/9" xmlns:fx="http://javafx.com/fxml/1" fx:controller="plataforma.Controller">
   <columnConstraints>
-    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="10.0" />
-    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="800.0" />
-      <ColumnConstraints hgrow="SOMETIMES" minWidth="200.0" prefWidth="200.0" />
+    <ColumnConstraints hgrow="SOMETIMES" maxWidth="25.0" minWidth="25.0" prefWidth="25.0" />
+    <ColumnConstraints hgrow="SOMETIMES" maxWidth="1000.0" minWidth="900.0" prefWidth="900.0" />
+      <ColumnConstraints hgrow="SOMETIMES" minWidth="172.0" prefWidth="228.0" />
   </columnConstraints>
   <rowConstraints>
     <RowConstraints maxHeight="35.0" minHeight="20.0" prefHeight="35.0" vgrow="SOMETIMES" />
@@ -28,7 +26,7 @@
         <menus>
           <Menu mnemonicParsing="false" text="Arquivo">
             <items>
-              <MenuItem mnemonicParsing="false" text="Close" />
+              <MenuItem fx:id="saveAll" mnemonicParsing="false" text="Salvar todos" />
             </items>
           </Menu>
           <Menu mnemonicParsing="false" text="Editar">
@@ -36,27 +34,27 @@
               <MenuItem mnemonicParsing="false" text="Delete" />
             </items>
           </Menu>
-          <Menu mnemonicParsing="false" text="Ajuda">
+          <Menu mnemonicParsing="false" text="Teste">
             <items>
-              <MenuItem mnemonicParsing="false" text="About" />
+              <MenuItem fx:id="threadTest" mnemonicParsing="false" text="Thread" />
             </items>
           </Menu>
         </menus>
       </MenuBar>
-      <Label fx:id="serverLabel" text="Status: ">
-         <GridPane.margin>
-            <Insets left="20.0" />
-         </GridPane.margin></Label>
       <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
          <children>
-            <TabPane fx:id="translationTabPane" prefHeight="200.0" prefWidth="200.0" side="LEFT" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="3.0" AnchorPane.rightAnchor="3.0" AnchorPane.topAnchor="3.0" />
+            <TabPane fx:id="translationTabPane" prefHeight="584.0" prefWidth="988.0" side="LEFT" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="3.0" AnchorPane.rightAnchor="3.0" AnchorPane.topAnchor="3.0" />
          </children>
       </AnchorPane>
-      <Pane fx:id="notePane" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-      <MenuBar GridPane.columnIndex="2">
+      <Pane fx:id="notePane" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
+         <children>
+            <TabPane fx:id="noteTabPane" prefHeight="590.0" prefWidth="313.0" side="RIGHT" tabClosingPolicy="UNAVAILABLE" />
+         </children></Pane>
+      <MenuBar fx:id="noteMenuBar" GridPane.columnIndex="2">
         <menus>
           <Menu mnemonicParsing="false" text="Notas">
             <items>
+                  <MenuItem fx:id="saveToDataBaseMenuItem" mnemonicParsing="false" text="salvar na nuvem" />
               <MenuItem mnemonicParsing="false" text="Mostrar tudo" />
                   <MenuItem mnemonicParsing="false" text="Mostrar notas trad." />
                   <MenuItem mnemonicParsing="false" text="Mostrar notas colab." />

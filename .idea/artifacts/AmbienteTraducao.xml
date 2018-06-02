@@ -1,0 +1,27 @@
+<component name="ArtifactManager">
+  <artifact type="javafx" build-on-make="true" name="AmbienteTraducao">
+    <output-path>$PROJECT_DIR$/out/artifacts/AmbienteTraducao</output-path>
+    <properties id="javafx-properties">
+      <options>
+        <option name="appClass" value="plataforma.Main" />
+        <option name="description" value="" />
+        <option name="htmlPlaceholderId" value="" />
+        <option name="title" value="Ambiente Tradução" />
+        <option name="vendor" value="Farol" />
+        <option name="version" value="0.3" />
+      </options>
+    </properties>
+    <root id="root">
+      <element id="archive" name="JavaFXApp.jar">
+        <element id="module-output" name="PlataformaShow" />
+      </element>
+      <element id="library" level="project" name="Maven: org.mongodb:mongo-java-driver:3.6.3" />
+      <element id="library" level="project" name="Maven: org.fxmisc.richtext:richtextfx:0.9.0" />
+      <element id="library" level="project" name="Maven: org.reactfx:reactfx:2.0-M5" />
+      <element id="library" level="project" name="Maven: org.fxmisc.undo:undofx:2.0.0" />
+      <element id="library" level="project" name="Maven: org.fxmisc.flowless:flowless:0.6" />
+      <element id="library" level="project" name="Maven: org.fxmisc.wellbehaved:wellbehavedfx:0.3.3" />
+      <element id="library" level="project" name="Maven: org.javatuples:javatuples:1.2" />
+    </root>
+  </artifact>
+</component>

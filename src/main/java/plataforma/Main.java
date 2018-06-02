@@ -13,9 +13,12 @@ public class Main extends Application {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/interface.fxml"));
         Parent root = loader.load();
 
+        root.getStylesheets().add("TextStyles.css");
+
         primaryStage.setTitle("Plataforma de Tradução Show!");
         primaryStage.setScene(new Scene(root, 1350, 650));
         primaryStage.show();
+
     }
 
 
